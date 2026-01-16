@@ -39,6 +39,18 @@ public class Dish {
         return sellingPrice;
     }
 
+    public List<DishIngredient> getCompositions() {
+        return compositions;
+    }
+
+    public void setSellingPrice(Double sellingPrice) {
+        this.sellingPrice = sellingPrice;
+    }
+
+    public void setCompositions(List<DishIngredient> compositions) {
+        this.compositions = compositions;
+    }
+
     public double getDishCost() {
         return compositions.stream()
                 .mapToDouble(DishIngredient::getCostForDish)
