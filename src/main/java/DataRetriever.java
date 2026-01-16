@@ -256,50 +256,76 @@ public class DataRetriever {
         }
     }
 
-    public List<Ingredient> findIngredientByCriteria(String IngredientName, CategoryEnum category, String dishName, int page, int size) throws SQLException {
+    public List<Ingredient> findIngredientsByCriteria(
+            String ingredientName,
+            CategoryEnum category,
+            String dishName,  // ← on garde pour compatibilité, mais on l'utilise différemment
+            int page,
+            int size) throws SQLException {
+
         int offset = (page - 1) * size;
+
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT i.* , d.name AS dish_name FROM ingredient i LEFT JOIN dish d ON d.id = i.id_dish WHERE 1=1");
-        ArrayList<Object> params = new ArrayList<>();
-        if(IngredientName != null && !IngredientName.isEmpty()){
-            sql.append(" AND LOWER(i.name) LIKE LOWER(?)");
-            params.add("%" + IngredientName + "%");
+        sql.append("""
+        SELECT DISTINCT i.id, i.name, i.price, i.category
+        FROM ingredient i
+        """);
+
+        // Si on filtre sur un nom de plat, on ajoute la jointure avec DishIngredient + Dish
+        boolean hasDishFilter = dishName != null && !dishName.isBlank();
+        if (hasDishFilter) {
+            sql.append("""
+            JOIN DishIngredient di ON di.id_ingredient = i.id
+            JOIN Dish d ON d.id = di.id_dish
+            """);
         }
-        if(category != null){
+
+        sql.append(" WHERE 1=1");
+
+        List<Object> params = new ArrayList<>();
+
+        if (ingredientName != null && !ingredientName.isBlank()) {
+            sql.append(" AND LOWER(i.name) LIKE LOWER(?)");
+            params.add("%" + ingredientName + "%");
+        }
+
+        if (category != null) {
             sql.append(" AND i.category = ?::category_enum");
             params.add(category.name());
         }
-        if(dishName != null && !dishName.isEmpty()){
+
+        if (hasDishFilter) {
             sql.append(" AND LOWER(d.name) LIKE LOWER(?)");
             params.add("%" + dishName + "%");
         }
+
         sql.append(" ORDER BY i.id LIMIT ? OFFSET ?");
         params.add(size);
         params.add(offset);
 
         List<Ingredient> ingredients = new ArrayList<>();
+
         try (Connection conn = DBConnection.getConnection();
-        PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            for(int i = 0; i < params.size(); i++){
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
                 ps.setObject(i + 1, params.get(i));
             }
+
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    Ingredient ingredient = new Ingredient();
-                    ingredient.setId(rs.getInt("id"));
-                    ingredient.setName(rs.getString("name"));
-                    ingredient.setPrice(rs.getDouble("price"));
-                    ingredient.setCategory(CategoryEnum.valueOf(rs.getString("category")));
-                    if(rs.getString("dish_name") != null){
-                        Dish dish = new Dish();
-                        dish.setName(rs.getString("dish_name"));
-                        ingredient.setDish(dish);
-                    }
-                    ingredients.add(ingredient);
-                    conn.close();
+                    Ingredient ing = new Ingredient();
+                    ing.setId(rs.getInt("id"));
+                    ing.setName(rs.getString("name"));
+                    ing.setPrice(rs.getDouble("price"));
+                    ing.setCategory(CategoryEnum.valueOf(rs.getString("category")));
+                    // PAS de setDish() ici → la relation n'est plus directe
+
+                    ingredients.add(ing);
                 }
             }
-        }
+        } // ← try-with-resources ferme automatiquement conn et ps
+
         return ingredients;
     }
 }
