@@ -5,18 +5,18 @@ public class Dish {
     private int id;
     private String name;
     private DishTypeEnum dishType;
-    private List<Ingredient> ingredients;
-    private Double price;
+    private Double sellingPrice;  // nullable
+    private List<DishIngredient> compositions = new ArrayList<>();
 
     public Dish() {
-        this.ingredients = new ArrayList<>();
+        this.compositions = new ArrayList<>();
     }
 
     public Dish(int id, String name, DishTypeEnum dishType) {
         this.id = id;
         this.name = name;
         this.dishType = dishType;
-        this.ingredients = new ArrayList<>();
+        this.compositions = new ArrayList<>();
     }
 
     public int getId() {
@@ -31,17 +31,17 @@ public class Dish {
         return dishType;
     }
 
-    public List<Ingredient> getIngredients() {
-        return ingredients;
+    public List<DishIngredient> getIngredients() {
+        return compositions;
     }
 
     public Double getPrice() {
-        return price;
+        return sellingPrice;
     }
 
     public double getDishCost() {
-        return ingredients.stream()
-                .mapToDouble(ingredient -> ingredient.getPrice())
+        return compositions.stream()
+                .mapToDouble(DishIngredient::getCostForDish)
                 .sum();
     }
 
@@ -57,19 +57,19 @@ public class Dish {
         this.dishType = dishType;
     }
 
-    public void setPrice(Double price) {
-        this.price = price;
+    public void setPrice(Double sellingPrice) {
+        this.sellingPrice = Dish.this.sellingPrice;
     }
 
-    public void setIngredients(List<Ingredient> ingredients) {
-        this.ingredients = ingredients != null ? ingredients : new ArrayList<>();
+    public void setIngredients(List<Ingredient> compositions) {
+        this.compositions = Dish.this.compositions != null ? Dish.this.compositions : new ArrayList<>();
     }
 
     public Double getCrossMargin(){
-        if(price == null){
+        if(sellingPrice == null){
             throw new RuntimeException("Impossible de calculer la marge du plat " + name + " car le prix de vente n'est pas définie");
         }
-        return price - getDishCost();
+        return sellingPrice - getDishCost();
     }
 
     @Override
@@ -78,9 +78,9 @@ public class Dish {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", dishType=" + dishType +
-                ", price=" +  price +
-                ", crossinMarge=" + (price != null ? getCrossMargin() : "N/A" )+
-                ", ingredients=" + ingredients +
+                ", sellingPrice=" +  sellingPrice +
+                ", crossinMarge=" + (sellingPrice != null ? getCrossMargin() : "N/A" )+
+                ", compositions=" + compositions +
                 '}';
     }
 
