@@ -4,3 +4,6 @@ grant connect on database mini_dish_db to mini_dish_db_manager;
 GRANT CREATE ON SCHEMA public to mini_dish_db;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO mini_dish_db_manager;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT, UPDATE, ON SEQUENCES TO mini_dish_db_manager;
+
+CREATE CAST (character varying AS dish_type_enum) WITH INOUT AS IMPLICIT;
+CREATE CAST (character varying AS category_enum) WITH INOUT AS IMPLICIT;

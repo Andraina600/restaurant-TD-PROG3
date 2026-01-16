@@ -6,6 +6,7 @@ public class Dish {
     private String name;
     private DishTypeEnum dishType;
     private List<Ingredient> ingredients;
+    private Double price;
 
     public Dish() {
         this.ingredients = new ArrayList<>();
@@ -34,7 +35,11 @@ public class Dish {
         return ingredients;
     }
 
-    public double getDishPrice() {
+    public Double getPrice() {
+        return price;
+    }
+
+    public double getDishCost() {
         return ingredients.stream()
                 .mapToDouble(ingredient -> ingredient.getPrice())
                 .sum();
@@ -52,8 +57,19 @@ public class Dish {
         this.dishType = dishType;
     }
 
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
     public void setIngredients(List<Ingredient> ingredients) {
         this.ingredients = ingredients != null ? ingredients : new ArrayList<>();
+    }
+
+    public Double getCrossMargin(){
+        if(price == null){
+            throw new RuntimeException("Impossible de calculer la marge du plat " + name + " car le prix de vente n'est pas définie");
+        }
+        return price - getDishCost();
     }
 
     @Override
@@ -62,6 +78,8 @@ public class Dish {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", dishType=" + dishType +
+                ", price=" +  price +
+                ", crossinMarge=" + (price != null ? getCrossMargin() : "N/A" )+
                 ", ingredients=" + ingredients +
                 '}';
     }

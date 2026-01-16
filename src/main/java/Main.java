@@ -7,13 +7,30 @@ public class Main {
     public static void main(String[] args) throws SQLException {
 
         DataRetriever dataRetriever = new DataRetriever();
-        System.out.println(dataRetriever.findDishById(1));
+        Dish dish1 =  dataRetriever.findDishById(1);
+        System.out.println(dish1);
+
+        //-----------------------------------------------------------
+        Dish dishToUpdate = dataRetriever.findDishById(3);
+        System.out.println(dishToUpdate.getPrice());
+        dishToUpdate.setPrice(5000.0);
+        System.out.println("Marge de dishToUpdate: " + dishToUpdate.getPrice());
+        Dish saved = dataRetriever.saveDish(dishToUpdate);
+        System.out.println("plat mis à jour: " + saved);
+        System.out.println("Nouvelle marge : " + saved.getCrossMargin());
+
+        //--------------------------------------------------
+       /*
+
+        System.out.println("Marge de dish1: " + dish1.getCrossMargin());
+        Dish dish2 =  dataRetriever.findDishById(2);
+        System.out.println("Marge de dish2: " + dish2.getCrossMargin());
         System.out.println(dataRetriever.findIngredient(3,5));
         dataRetriever.findDishByIngredientName("crème fraiche").forEach(System.out::println);
         dataRetriever.findIngredientByCriteria("poulet", CategoryEnum.ANIMAL, "poulet grillé", 1, 1).forEach(System.out::println);
 
-        //--------------------------------------------------
-       /* List<Ingredient> newIngredients = new ArrayList<>();
+
+       List<Ingredient> newIngredients = new ArrayList<>();
         Dish existingDish = dataRetriever.findDishById(1);
         if (existingDish != null) {
             System.out.println("Plat trouvé: " + existingDish.getName());
@@ -40,7 +57,7 @@ public class Main {
         */
         //----------------------------------------------------
 
-        Dish newDish = new Dish();
+        /* Dish newDish = new Dish();
         newDish.setName("Pizza Margherita");
         newDish.setDishType(DishTypeEnum.MAIN);  // Assure-toi que ton enum s'appelle comme ça
 
@@ -79,7 +96,7 @@ public class Main {
         Dish updatedDish = dataRetriever.saveDish(savedDish);
         System.out.println("Plat mis à jour, ID : " + updatedDish.getId());
         System.out.println("Nouveau nom : " + updatedDish.getName());
-        System.out.println("Ingrédients après mise à jour : " + updatedDish.getIngredients().size());
+        System.out.println("Ingrédients après mise à jour : " + updatedDish.getIngredients().size());*/
 
     }
 }

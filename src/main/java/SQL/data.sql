@@ -13,3 +13,10 @@ INSERT INTO Ingredient (id, name, price, category, id_dish) values
 
 SELECT setval('dish_id_seq', COALESCE((SELECT MAX(id) FROM dish), 1));
 SELECT setval('ingredient_id_seq', COALESCE((SELECT MAX(id) FROM ingredient), 1));
+
+update dish set price = 2000.00 where name = 'Salade fraîche';
+update dish set price = 6000.00 where name = 'Poulet grillé';
+update dish set price = null where name = 'Riz aux légumes';
+update dish set price = null where name = 'Gâteau au chocolat';
+update dish set price = null where name = 'Salade de fruit';
+

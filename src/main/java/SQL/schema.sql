@@ -21,3 +21,5 @@ CREATE TABLE Ingredient(
     id_dish int,
     constraint fk_dish foreign key (id_dish) references Dish(id) on delete set null
 )
+
+alter table dish add column price numeric null;
