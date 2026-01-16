@@ -30,7 +30,6 @@ public class DataRetriever {
                 }
             }
 
-            // Récup compositions
             try (PreparedStatement ps = conn.prepareStatement(sqlComp)) {
                 ps.setInt(1, id);
                 try (ResultSet rs = ps.executeQuery()) {
@@ -89,7 +88,6 @@ public class DataRetriever {
             conn.setAutoCommit(false);
 
             for (Ingredient ing : newIngredients) {
-                // Pas de getDish() ici → on n'associe pas encore
                 if (ing.getId() != 0) {
                     throw new IllegalArgumentException("Nouvel ingrédient doit avoir id = 0");
                 }
@@ -115,7 +113,7 @@ public class DataRetriever {
                 try {
                     conn.rollback();
                 } catch (SQLException ex) {
-                    // ignore
+
                 }
             }
             throw new RuntimeException("Erreur lors de la création des ingrédients", e);
@@ -125,7 +123,7 @@ public class DataRetriever {
                     conn.setAutoCommit(true);
                     conn.close();
                 } catch (SQLException ex) {
-                    // ignore
+
                 }
             }
         }
@@ -137,7 +135,6 @@ public class DataRetriever {
             conn = DBConnection.getConnection();
             conn.setAutoCommit(false);
 
-            // Requête UPSERT (ON CONFLICT DO UPDATE)
             String sqlDish = """
             INSERT INTO dish (id, name, dish_type, selling_price)
             VALUES (?, ?, ?::dish_type_enum, ?)
@@ -259,7 +256,7 @@ public class DataRetriever {
     public List<Ingredient> findIngredientsByCriteria(
             String ingredientName,
             CategoryEnum category,
-            String dishName,  // ← on garde pour compatibilité, mais on l'utilise différemment
+            String dishName,
             int page,
             int size) throws SQLException {
 
@@ -270,8 +267,6 @@ public class DataRetriever {
         SELECT DISTINCT i.id, i.name, i.price, i.category
         FROM ingredient i
         """);
-
-        // Si on filtre sur un nom de plat, on ajoute la jointure avec DishIngredient + Dish
         boolean hasDishFilter = dishName != null && !dishName.isBlank();
         if (hasDishFilter) {
             sql.append("""
@@ -319,12 +314,10 @@ public class DataRetriever {
                     ing.setName(rs.getString("name"));
                     ing.setPrice(rs.getDouble("price"));
                     ing.setCategory(CategoryEnum.valueOf(rs.getString("category")));
-                    // PAS de setDish() ici → la relation n'est plus directe
-
                     ingredients.add(ing);
                 }
             }
-        } // ← try-with-resources ferme automatiquement conn et ps
+        }
 
         return ingredients;
     }
