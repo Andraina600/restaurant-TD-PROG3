@@ -167,7 +167,7 @@ public class DataRetriever {
                 }
             }
 
-            String deleteSql = "DELETE FROM DishIngredient WHERE id_dish = ?";
+            String deleteSql = "DELETE FROM DishIngredient WHERE id_dish = ? and id_ingredient = ?";
             try (PreparedStatement psDelete = conn.prepareStatement(deleteSql)) {
                 psDelete.setInt(1, savedId);
                 psDelete.executeUpdate();

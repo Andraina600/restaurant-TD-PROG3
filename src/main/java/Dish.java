@@ -5,8 +5,8 @@ public class Dish {
     private int id;
     private String name;
     private DishTypeEnum dishType;
-    private Double sellingPrice;  // nullable
-    private List<DishIngredient> compositions = new ArrayList<>();
+    private Double sellingPrice;
+    private List<DishIngredient> compositions;
 
     public Dish() {
         this.compositions = new ArrayList<>();
