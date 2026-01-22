@@ -1,102 +1,78 @@
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 public class Main {
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) {
+        DataRetriever retriever = new DataRetriever();
 
-        DataRetriever dataRetriever = new DataRetriever();
-        Dish dish1 =  dataRetriever.findDishById(1);
-        System.out.println(dish1);
+        try {
+            System.out.println("=== TEST 1 : Sauvegarde d'un ingrédient EXISTANT avec nouveaux mouvements ===");
 
-        //-----------------------------------------------------------
-        Dish dishToUpdate = dataRetriever.findDishById(3);
-        System.out.println(dishToUpdate.getPrice());
-        dishToUpdate.setPrice(5000.0);
-        System.out.println("Marge de dishToUpdate: " + dishToUpdate.getPrice());
-        Dish saved = dataRetriever.saveDish(dishToUpdate);
-        System.out.println("plat mis à jour: " + saved);
-        System.out.println("Nouvelle marge : " + saved.getCrossMargin());
+            // 1. Récupérer un ingrédient existant (ex: ID 1 = Laitue)
+            Ingredient existing = retriever.findIngredientById(1); // ou par nom/critères
+            if (existing == null) {
+                System.out.println("Ingrédient ID 1 non trouvé → on en crée un nouveau");
+                existing = new Ingredient();
+                existing.setId(0); // nouveau
+                existing.setName("Laitue Test");
+                existing.setPrice(850.00);
+                existing.setCategory(CategoryEnum.VEGETABLE);
+            }
 
-        //--------------------------------------------------
-       /*
+            // 2. Ajouter des mouvements de stock (certains avec ID existant pour tester ON CONFLICT)
+            StockMouvement mvtNew1 = new StockMouvement();
+            mvtNew1.setId(0); // nouveau mouvement
+            mvtNew1.setValue(new StockValue(3.5, UnitType.KG));
+            mvtNew1.setType(MouvementType.IN);
+            mvtNew1.setCreationDatetime(Instant.now().minus(2, ChronoUnit.DAYS));
 
-        System.out.println("Marge de dish1: " + dish1.getCrossMargin());
-        Dish dish2 =  dataRetriever.findDishById(2);
-        System.out.println("Marge de dish2: " + dish2.getCrossMargin());
-        System.out.println(dataRetriever.findIngredient(3,5));
-        dataRetriever.findDishByIngredientName("crème fraiche").forEach(System.out::println);
-        dataRetriever.findIngredientByCriteria("poulet", CategoryEnum.ANIMAL, "poulet grillé", 1, 1).forEach(System.out::println);
+            StockMouvement mvtNew2 = new StockMouvement();
+            mvtNew2.setId(999); // ID fictif qui n'existe pas → sera inséré
+            mvtNew2.setValue(new StockValue(1.2, UnitType.KG));
+            mvtNew2.setType(MouvementType.OUT);
+            mvtNew2.setCreationDatetime(Instant.now());
 
+            StockMouvement mvtExisting = new StockMouvement();
+            mvtExisting.setId(6); // ID déjà existant dans les données de test (0.2 OUT)
+            mvtExisting.setValue(new StockValue(0.2, UnitType.KG));
+            mvtExisting.setType(MouvementType.OUT);
+            mvtExisting.setCreationDatetime(Instant.parse("2024-01-06T12:00:00Z"));
 
-       List<Ingredient> newIngredients = new ArrayList<>();
-        Dish existingDish = dataRetriever.findDishById(1);
-        if (existingDish != null) {
-            System.out.println("Plat trouvé: " + existingDish.getName());
+            // Ajout à la liste
+            existing.getStockMouvementList().add(mvtNew1);
+            existing.getStockMouvementList().add(mvtNew2);
+            existing.getStockMouvementList().add(mvtExisting);
+
+            // 3. Sauvegarde
+            System.out.println("Avant sauvegarde : " + existing.getStockMouvementList().size() + " mouvements");
+            Ingredient saved = retriever.saveIngredient(existing);
+            System.out.println("Après sauvegarde : ingrédient ID = " + saved.getId());
+
+            // 4. Vérification : recharger depuis la base
+            Ingredient reloaded = retriever.findIngredientById(saved.getId());
+            System.out.println("Mouvements après rechargement : " + reloaded.getStockMouvementList().size());
+
+            // 5. Affichage des stocks
+            Instant now = Instant.now();
+            Instant pastDate = Instant.parse("2024-01-06T12:00:00Z");
+
+            System.out.println("\nStock actuel (maintenant) : " + reloaded.getCurrentStock());
+            System.out.println("Stock au 2024-01-06 12:00 : " + reloaded.getStockValueAt(pastDate));
+
+            // Bonus : afficher tous les mouvements
+            System.out.println("\nListe des mouvements enregistrés :");
+            for (StockMouvement mvt : reloaded.getStockMouvementList()) {
+                System.out.println(mvt);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Erreur SQL : " + e.getMessage());
+            throw new RuntimeException(e);
+        } catch (Exception e) {
+            System.err.println("Erreur générale : " + e.getMessage());
+            throw new RuntimeException(e);
         }
-        else {
-            System.out.println("Le plat n'existe pas");
-        }
-
-        Ingredient i1 = new Ingredient();
-        i1.setName("Crème fraiche");
-        i1.setPrice(50.00);
-        i1.setCategory(CategoryEnum.DAIRY);
-        i1.setDish(existingDish);
-        Ingredient i2 = new Ingredient();
-        i2.setName("Huile d'olive");
-        i2.setPrice(80.00);
-        i2.setCategory(CategoryEnum.DAIRY);
-        i2.setDish(existingDish);
-        newIngredients.add(i2);
-        List<Ingredient> created = dataRetriever.createIngredients(newIngredients);
-        created.forEach(System.out::println);
-        //-----------------------------------------------------------------
-
-        */
-        //----------------------------------------------------
-
-        /* Dish newDish = new Dish();
-        newDish.setName("Pizza Margherita");
-        newDish.setDishType(DishTypeEnum.MAIN);  // Assure-toi que ton enum s'appelle comme ça
-
-        List<Ingredient> ingredients = new ArrayList<>();
-        Ingredient ing1 = new Ingredient();
-        ing1.setName("Tomate");
-        ing1.setPrice(2.5);
-        ing1.setCategory(CategoryEnum.VEGETABLE);
-        ing1.setDish(newDish);
-        ingredients.add(ing1);
-        Ingredient ing2 = new Ingredient();
-        ing2.setName("Mozzarella");
-        ing2.setPrice(4.0);
-        ing2.setCategory(CategoryEnum.DAIRY);
-        ing2.setDish(newDish);
-        ingredients.add(ing2);
-        newDish.setIngredients(ingredients);
-
-        Dish savedDish = dataRetriever.saveDish(newDish);
-        System.out.println("Plat créé avec ID : " + savedDish.getId());
-        System.out.println("Ingrédients sauvegardés : " + savedDish.getIngredients().size());
-
-        // Test 2 : Modification d'un plat existant
-        savedDish.setName("Pizza Margherita Modifiée");
-        savedDish.setDishType(DishTypeEnum.MAIN);
-
-        // Modifier/ajouter/supprimer des ingrédients
-        savedDish.getIngredients().remove(0);  // Supprime la tomate
-        Ingredient ing3 = new Ingredient();
-        ing3.setName("Basilic");
-        ing3.setPrice(1.5);
-        ing3.setCategory(CategoryEnum.VEGETABLE);
-        ing3.setDish(savedDish);
-        savedDish.getIngredients().add(ing3);
-
-        Dish updatedDish = dataRetriever.saveDish(savedDish);
-        System.out.println("Plat mis à jour, ID : " + updatedDish.getId());
-        System.out.println("Nouveau nom : " + updatedDish.getName());
-        System.out.println("Ingrédients après mise à jour : " + updatedDish.getIngredients().size());*/
-
     }
 }

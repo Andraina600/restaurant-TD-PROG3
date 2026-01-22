@@ -31,12 +31,11 @@ create type_mvt as enum ('IN', 'OUT')
 CREATE TABLE stock_mouvement (
     id SERIAL PRIMARY KEY,
     id_ingredient INT NOT NULL REFERENCES ingredient(id) ON DELETE CASCADE,
-    quantity NUMERIC NOT NULL CHECK (quantity > 0),  -- quantité toujours positive
+    quantity NUMERIC NOT NULL CHECK (quantity > 0),
     unit unit_type NOT NULL,
     type_mouvement type_mvt NOT NULL,
     creation_datetime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Index pour accélérer les requêtes par ingrédient
 CREATE INDEX idx_stock_mouvement_ingredient ON stock_mouvement(id_ingredient);
 CREATE INDEX idx_stock_mouvement_date ON stock_mouvement(creation_datetime);

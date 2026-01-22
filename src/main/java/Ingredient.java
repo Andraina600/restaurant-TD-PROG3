@@ -55,10 +55,9 @@ public class Ingredient {
         this.stockMouvementList = stockMouvementList != null ? stockMouvementList : new ArrayList<>();
     }
 
-    // Calcul du stock à une date donnée (instant)
     public StockValue getStockValueAt(Instant instant) {
         double total = 0.0;
-        UnitType unit = null;  // On suppose que toutes les unités sont identiques (KG dans les données)
+        UnitType unit = null;
 
         for (StockMouvement mvt : stockMouvementList) {
             if (mvt.getCreationDatetime().isBefore(instant) || mvt.getCreationDatetime().equals(instant)) {
@@ -75,7 +74,6 @@ public class Ingredient {
         return new StockValue(total < 0 ? 0 : total, unit != null ? unit : UnitType.KG);
     }
 
-    // Stock actuel (à maintenant)
     public StockValue getCurrentStock() {
         return getStockValueAt(Instant.now());
     }

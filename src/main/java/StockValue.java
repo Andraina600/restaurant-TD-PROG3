@@ -1,6 +1,6 @@
 public class StockValue {
     private double quantity;
-    private UnitType unit;  // PCS, KG, L
+    private UnitType unit;
 
     public StockValue() {}
 
