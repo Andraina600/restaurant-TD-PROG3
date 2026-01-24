@@ -4,7 +4,7 @@ CREATE TABLE "order" (
     creation_datetime timestamp not null default current_timestamp
 );
 
-CREATE TABLE dishorder (
+CREATE TABLE dish_order (
     id serial primary key,
     id_order int unique not null references "order"(id) on delete cascade,
     id_dish int unique not null references dish(id),
