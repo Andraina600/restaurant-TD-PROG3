@@ -78,6 +78,24 @@ public class Ingredient {
         return getStockValueAt(Instant.now());
     }
 
+    public double getCurrentStockInKG() {
+        double totalKG = 0.0;
+        for (StockMouvement mvt : stockMouvementList) {
+            try {
+                double qtyKG = UnitConvertion.toKG(this.getName() , mvt.getValue().getQuantity(), mvt.getValue().getUnit());
+                if(mvt.getType() == MouvementType.IN) {
+                    totalKG += qtyKG;
+                }
+                else{
+                    totalKG -= qtyKG;
+                }
+            }catch (IllegalArgumentException e){
+
+            }
+        }
+        return Math.max(0, totalKG);
+    }
+
     @Override
     public String toString() {
         return "Ingredient{" +
